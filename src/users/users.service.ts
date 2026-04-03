@@ -36,6 +36,7 @@ export class UsersService {
     if (user.password !== updatePasswordDto.oldPassword)
       throw new ForbiddenException('Unmatched password');
     user.password = updatePasswordDto.newPassword;
+    user.updatedAt = Date.now();
     return user;
   }
 
