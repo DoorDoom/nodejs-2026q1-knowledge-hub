@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
   ParseUUIDPipe,
@@ -16,7 +16,7 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { ArticleStatus } from './entities/article.entity';
 
-@Controller('articles')
+@Controller('article')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
@@ -54,7 +54,7 @@ export class ArticlesController {
     return this.articlesService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param(
       'id',

@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, IsOptional, IsArray } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsArray,
+  IsEnum,
+} from 'class-validator';
 import { ArticleStatus } from '../entities/article.entity';
 
 export class CreateArticleDto {
@@ -13,6 +19,7 @@ export class CreateArticleDto {
   @IsOptional()
   categoryId?: string;
   @IsOptional()
+  @IsEnum(ArticleStatus)
   status?: ArticleStatus;
   @IsOptional()
   @IsArray({ message: 'Tags must be array of string' })

@@ -2,10 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
+import { ArticlesService } from 'src/articles/articles.service';
 
 @Injectable()
 export class CategoriesService {
   categories: Category[] = [];
+
+  constructor(private readonly articlesService: ArticlesService) {}
   create(createCategoryDto: CreateCategoryDto) {
     const category = new Category(createCategoryDto);
 
@@ -38,6 +41,9 @@ export class CategoriesService {
       (category) => category.id === id,
     );
     if (category === -1) throw new NotFoundException('Category not found');
+    this.articlesService
+      .findbyParam({ categoryId: id })
+      .forEach((article) => (article.categoryId = null));
     return this.categories.splice(category, 1);
   }
 }

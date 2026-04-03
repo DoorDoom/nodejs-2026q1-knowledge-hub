@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
@@ -11,7 +13,10 @@ import { ArticlesService } from 'src/articles/articles.service';
 export class CommentsService {
   comments: Comment[] = [];
 
-  constructor(private readonly articlesService: ArticlesService) {}
+  constructor(
+    @Inject(forwardRef(() => ArticlesService))
+    private readonly articlesService: ArticlesService,
+  ) {}
 
   create(createCommentDto: CreateCommentDto) {
     const comment = new Comment(createCommentDto);
@@ -27,8 +32,15 @@ export class CommentsService {
     return comment;
   }
 
-  findAll(articleId: string) {
+  findAll(articleId?: string) {
     return this.comments.filter((comment) => comment.articleId === articleId);
+  }
+
+  removeByAuthor(authorId: string) {
+    this.comments = this.comments.filter(
+      (comment) => comment.authorId !== authorId,
+    );
+    return this.comments;
   }
 
   remove(id: string) {

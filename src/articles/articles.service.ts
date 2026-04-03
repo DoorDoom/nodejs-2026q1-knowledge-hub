@@ -1,7 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { Article, ArticleStatus } from './entities/article.entity';
+import { CommentsService } from 'src/comments/comments.service';
 
 interface SearchParams {
   status?: ArticleStatus;
@@ -12,6 +18,11 @@ interface SearchParams {
 @Injectable()
 export class ArticlesService {
   articles: Article[] = [];
+
+  constructor(
+    @Inject(forwardRef(() => CommentsService))
+    private commentsService: CommentsService,
+  ) {}
 
   create(createArticleDto: CreateArticleDto) {
     const article = new Article(createArticleDto);
@@ -62,6 +73,17 @@ export class ArticlesService {
   remove(id: string) {
     const article = this.articles.findIndex((article) => article.id === id);
     if (article === -1) throw new NotFoundException('Article not found');
+    // this.commentsService
+    //   .findAll(this.articles[article].id)
+    //   .forEach((comment) => this.commentsService.remove(comment.id));
+    // console.log(this.commentsService.findAll(id));
     return this.articles.splice(article, 1);
+  }
+
+  removeAuthor(authorId: string) {
+    this.articles.forEach((article) => {
+      if (article.authorId === authorId) article.authorId = null;
+    });
+    return this.articles;
   }
 }

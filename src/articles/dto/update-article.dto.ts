@@ -1,5 +1,3 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateArticleDto } from './create-article.dto';
 import { IsArray, IsOptional, IsString } from 'class-validator';
 import { ArticleStatus } from '../entities/article.entity';
 

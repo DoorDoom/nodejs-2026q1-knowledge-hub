@@ -7,10 +7,17 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { User } from './entities/user.entity';
+import { ArticlesService } from 'src/articles/articles.service';
+import { CommentsService } from 'src/comments/comments.service';
 
 @Injectable()
 export class UsersService {
   users: User[] = [];
+
+  constructor(
+    private readonly articlesService: ArticlesService,
+    private readonly commentsService: CommentsService,
+  ) {}
 
   create(createUserDto: CreateUserDto) {
     const user = new User(createUserDto);
@@ -43,9 +50,8 @@ export class UsersService {
   remove(id: string) {
     const user = this.users.findIndex((user) => user.id === id);
     if (user === -1) throw new NotFoundException('User not found');
-    return this.users.splice(
-      this.users.findIndex((user) => user.id === id),
-      1,
-    );
+    this.commentsService.removeByAuthor(this.users[user].id);
+    this.articlesService.removeAuthor(this.users[user].id);
+    return this.users.splice(user, 1);
   }
 }
