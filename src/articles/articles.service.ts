@@ -73,10 +73,7 @@ export class ArticlesService {
   remove(id: string) {
     const article = this.articles.findIndex((article) => article.id === id);
     if (article === -1) throw new NotFoundException('Article not found');
-    // this.commentsService
-    //   .findAll(this.articles[article].id)
-    //   .forEach((comment) => this.commentsService.remove(comment.id));
-    // console.log(this.commentsService.findAll(id));
+    this.commentsService.removeByArticle(id);
     return this.articles.splice(article, 1);
   }
 

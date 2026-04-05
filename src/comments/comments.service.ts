@@ -43,6 +43,13 @@ export class CommentsService {
     return this.comments;
   }
 
+  removeByArticle(articleId: string) {
+    this.comments = this.comments.filter(
+      (comment) => comment.articleId !== articleId,
+    );
+    return this.comments;
+  }
+
   remove(id: string) {
     const comment = this.comments.findIndex((comment) => comment.id === id);
     if (comment === -1) throw new NotFoundException('Comment not found');
