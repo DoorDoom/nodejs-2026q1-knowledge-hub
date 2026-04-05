@@ -37,35 +37,19 @@ To run all tests without authorization
 npm run test
 ```
 
-To run only one of all test suites
+Mentions: if tests don't work because of
 
 ```
-npm run test -- <path to suite>
+TypeError: Cannot read properties of undefined (reading 'prototype')
 ```
 
-To run all test with authorization
+try use
 
 ```
-npm run test:auth
+npm i jsonwebtoken@latest
 ```
 
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
-```
-
-To run refresh token tests
-
-```
-npm run test:refresh
-```
-
-To run RBAC (role-based access control) tests
-
-```
-npm run test:rbac
-```
+because the library is lacked of updating
 
 ### Auto-fix and format
 
