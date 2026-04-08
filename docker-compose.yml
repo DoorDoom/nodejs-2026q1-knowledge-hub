@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+  node:
+    build: .
+    ports:
+      - '${PORT}:${PORT}'
+    environment:
+      - PORT=${PORT}
+      - NODE_ENV=production
+    restart: on-failure
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:${PORT}/ || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    depends_on:
+      - db
