@@ -93,7 +93,10 @@ export class CategoriesController {
     id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
-    return this.categoriesService.update(id, updateCategoryDto);
+    return this.categoriesService.update({
+      where: { id },
+      data: updateCategoryDto,
+    });
   }
 
   @Delete(':id')
@@ -120,6 +123,6 @@ export class CategoriesController {
     )
     id: string,
   ) {
-    return this.categoriesService.remove(id);
+    return this.categoriesService.delete({ id });
   }
 }

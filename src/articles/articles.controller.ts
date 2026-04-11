@@ -14,8 +14,8 @@ import {
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { ArticleStatus } from './entities/article.entity';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { Status } from 'generated/prisma/enums';
 
 @Controller('article')
 export class ArticlesController {
@@ -43,8 +43,8 @@ export class ArticlesController {
     name: 'status',
     required: false,
     description: 'Filter articles by status',
-    enum: ArticleStatus,
-    example: ArticleStatus.PUBLISHED,
+    enum: Status,
+    example: Status.PUBLISHED,
   })
   @ApiQuery({
     name: 'tag',
@@ -66,7 +66,7 @@ export class ArticlesController {
   ) {
     if (status || tag || categoryId)
       return this.articlesService.findbyParam({
-        status: status as ArticleStatus,
+        status: status as Status,
         tag,
         categoryId,
       });
@@ -96,7 +96,7 @@ export class ArticlesController {
     )
     id: string,
   ) {
-    return this.articlesService.findOne(id);
+    return this.articlesService.findOne({ id });
   }
 
   @Put(':id')
@@ -124,7 +124,10 @@ export class ArticlesController {
     id: string,
     @Body() updateArticleDto: UpdateArticleDto,
   ) {
-    return this.articlesService.update(id, updateArticleDto);
+    return this.articlesService.update({
+      where: { id },
+      data: updateArticleDto,
+    });
   }
 
   @Delete(':id')
@@ -151,6 +154,6 @@ export class ArticlesController {
     )
     id: string,
   ) {
-    return this.articlesService.remove(id);
+    return this.articlesService.delete({ id });
   }
 }

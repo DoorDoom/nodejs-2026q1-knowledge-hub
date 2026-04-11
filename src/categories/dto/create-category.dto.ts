@@ -9,6 +9,7 @@ export class CreateCategoryDto {
     example: 'Technology',
   })
   name: string;
+
   @IsString({ message: 'Description must be string' })
   @IsNotEmpty({ message: 'Description cannot be empty' })
   @ApiProperty({
