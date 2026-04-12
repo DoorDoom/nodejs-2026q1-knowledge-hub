@@ -1,13 +1,5 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { Comment } from './entities/comment.entity';
-import { ArticlesService } from 'src/articles/articles.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from 'generated/prisma/client';
 

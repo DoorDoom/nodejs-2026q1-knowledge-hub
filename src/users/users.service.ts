@@ -4,11 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 
-import { ArticlesService } from 'src/articles/articles.service';
-import { CommentsService } from 'src/comments/comments.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, User } from 'generated/prisma/client';
 
