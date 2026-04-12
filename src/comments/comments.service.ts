@@ -1,58 +1,35 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { Comment } from './entities/comment.entity';
-import { ArticlesService } from 'src/articles/articles.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from 'generated/prisma/client';
 
 @Injectable()
 export class CommentsService {
-  comments: Comment[] = [];
+  constructor(private prisma: PrismaService) {}
 
-  constructor(
-    @Inject(forwardRef(() => ArticlesService))
-    private readonly articlesService: ArticlesService,
-  ) {}
-
-  create(createCommentDto: CreateCommentDto) {
-    const comment = new Comment(createCommentDto);
-
-    try {
-      this.articlesService.findOne(comment.articleId);
-    } catch (err) {
-      throw new UnprocessableEntityException('No such article');
-    }
-
-    this.comments.push(comment);
-
-    return comment;
+  create(data: CreateCommentDto) {
+    return this.prisma.comment.create({
+      data: {
+        ...data,
+        authorId: undefined,
+        author: { connect: { id: data.authorId } },
+        articleId: undefined,
+        article: data.articleId ? { connect: { id: data.articleId } } : null,
+      } as Prisma.CommentCreateInput,
+    });
   }
 
   findAll(articleId?: string) {
-    return this.comments.filter((comment) => comment.articleId === articleId);
+    return this.prisma.comment.findMany({
+      where: {
+        articleId,
+      },
+    });
   }
 
-  removeByAuthor(authorId: string) {
-    this.comments = this.comments.filter(
-      (comment) => comment.authorId !== authorId,
-    );
-    return this.comments;
-  }
-
-  removeByArticle(articleId: string) {
-    this.comments = this.comments.filter(
-      (comment) => comment.articleId !== articleId,
-    );
-    return this.comments;
-  }
-
-  remove(id: string) {
-    const comment = this.comments.findIndex((comment) => comment.id === id);
-    if (comment === -1) throw new NotFoundException('Comment not found');
-    return this.comments.splice(comment, 1);
+  delete(where: Prisma.CommentWhereUniqueInput) {
+    return this.prisma.comment.delete({
+      where,
+    });
   }
 }

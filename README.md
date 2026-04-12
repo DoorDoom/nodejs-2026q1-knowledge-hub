@@ -66,3 +66,13 @@ npm run format
 Press <kbd>F5</kbd> to debug.
 
 For more information, visit: https://code.visualstudio.com/docs/editor/debugging
+
+## Docker
+
+The DockerHub: https://hub.docker.com/r/doordoom/nodejs-2026q1-knowledge-hub/tags
+
+start work:
+
+```
+docker-compose up --build
+```

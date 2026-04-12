@@ -1,17 +1,12 @@
 import { randomUUID } from 'crypto';
 import { CreateArticleDto } from '../dto/create-article.dto';
-
-export enum ArticleStatus {
-  DRAFT = 'draft',
-  PUBLISHED = 'published',
-  ARCHIVED = 'archived',
-}
+import { Status } from 'generated/prisma/enums';
 
 export class Article {
   id: string;
   title: string;
   content: string;
-  status: ArticleStatus;
+  status: Status;
   authorId: string | null;
   categoryId: string | null;
   tags: string[];
@@ -22,7 +17,7 @@ export class Article {
     this.id = randomUUID();
     this.title = createArticleDto.title;
     this.content = createArticleDto.content;
-    this.status = createArticleDto.status ?? ArticleStatus.DRAFT;
+    this.status = createArticleDto.status ?? Status.DRAFT;
     this.tags = createArticleDto.tags ?? [];
     this.authorId = createArticleDto.authorId ?? null;
     this.categoryId = createArticleDto.categoryId ?? null;

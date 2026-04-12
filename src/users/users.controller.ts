@@ -63,7 +63,7 @@ export class UsersController {
     )
     id: string,
   ) {
-    return this.usersService.findOne(id);
+    return this.usersService.findOne({ id });
   }
 
   @Put(':id')
@@ -90,7 +90,7 @@ export class UsersController {
     id: string,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    return this.usersService.update(id, updatePasswordDto);
+    return this.usersService.update({ where: { id }, data: updatePasswordDto });
   }
 
   @Delete(':id')
@@ -117,6 +117,6 @@ export class UsersController {
     )
     id: string,
   ) {
-    return this.usersService.remove(id);
+    return this.usersService.delete({ id });
   }
 }

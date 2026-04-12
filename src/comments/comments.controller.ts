@@ -71,6 +71,6 @@ export class CommentsController {
     )
     id: string,
   ) {
-    return this.commentsService.remove(id);
+    return this.commentsService.delete({ id });
   }
 }
