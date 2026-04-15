@@ -9,7 +9,7 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, User } from 'generated/prisma/client';
 
-type Response = Omit<User, 'password'>;
+type Response = Omit<User, 'password' | 'refreshToken'>;
 
 @Injectable()
 export class UsersService {
@@ -20,6 +20,7 @@ export class UsersService {
     updatedAt: true,
     role: true,
     articles: true,
+    refreshToken: false,
   };
 
   constructor(private prisma: PrismaService) {}

@@ -7,6 +7,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { CommentsModule } from './comments/comments.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PrismaModule } from './prisma/prisma.module';
     CommentsModule,
     ConfigModule.forRoot(),
     PrismaModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
