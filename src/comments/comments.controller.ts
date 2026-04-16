@@ -15,12 +15,14 @@ import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { Roles } from 'src/decorators/roles.decorator';
 
 @Controller('comment')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR'])
   @Post()
   @ApiOperation({
     summary: 'Create comment',
@@ -34,6 +36,7 @@ export class CommentsController {
   }
 
   @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR', 'VIEWER'])
   @Get()
   @ApiOperation({
     summary: 'Get all comments',
@@ -52,6 +55,7 @@ export class CommentsController {
   }
 
   @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR', 'VIEWER'])
   @Get(':id')
   @ApiOperation({
     summary: 'Get comment by ID',
@@ -77,6 +81,7 @@ export class CommentsController {
   }
 
   @UseGuards(AuthGuard)
+  @Roles(['ADMIN'])
   @Delete(':id')
   @HttpCode(204)
   @ApiOperation({

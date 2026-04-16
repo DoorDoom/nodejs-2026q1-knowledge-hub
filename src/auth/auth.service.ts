@@ -30,13 +30,13 @@ export class AuthService {
 
   async updateTokens(user: User) {
     const accessToken = sign(
-      { userId: user.id, login: user.login, role: user.role },
+      { userId: user.id, login: user.login, role: user.role.toLowerCase() },
       process.env.JWT_SECRET_KEY || 'secret',
       { expiresIn: process.env.TOKEN_EXPIRE_TIME || '15m' },
     );
 
     const refreshToken = sign(
-      { userId: user.id },
+      { userId: user.id, login: user.login, role: user.role.toLowerCase() },
       process.env.JWT_SECRET_REFRESH_KEY || 'secret',
       { expiresIn: process.env.TOKEN_REFRESH_EXPIRE_TIME || '7d' },
     );
