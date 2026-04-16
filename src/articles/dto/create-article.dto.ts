@@ -40,7 +40,6 @@ export class CreateArticleDto {
   categoryId?: string;
 
   @IsOptional()
-  @IsEnum(Status)
   @ApiPropertyOptional({
     description: 'Current status of the article',
     enum: Status,

@@ -9,16 +9,19 @@ import {
   ParseUUIDPipe,
   BadRequestException,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('category')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   @ApiOperation({
     summary: 'Create category',
@@ -30,6 +33,7 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto);
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   @ApiOperation({
     summary: 'Get all categories',
@@ -43,6 +47,7 @@ export class CategoriesController {
     return this.categoriesService.findAll();
   }
 
+  @UseGuards(AuthGuard)
   @Get(':id')
   @ApiOperation({
     summary: 'Get category by ID',
@@ -69,6 +74,7 @@ export class CategoriesController {
     return this.categoriesService.findOne(id);
   }
 
+  @UseGuards(AuthGuard)
   @Put(':id')
   @ApiOperation({
     summary: 'Update category',
@@ -99,6 +105,7 @@ export class CategoriesController {
     });
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   @HttpCode(204)
   @ApiOperation({

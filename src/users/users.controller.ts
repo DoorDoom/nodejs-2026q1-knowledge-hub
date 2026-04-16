@@ -9,16 +9,19 @@ import {
   ParseUUIDPipe,
   BadRequestException,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('user')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   @ApiOperation({
     summary: 'Create user',
@@ -30,6 +33,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   @ApiOperation({
     summary: 'Get all users',
@@ -40,6 +44,7 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @UseGuards(AuthGuard)
   @Get(':id')
   @ApiOperation({
     summary: 'Get user by ID',
@@ -66,6 +71,7 @@ export class UsersController {
     return this.usersService.findOne({ id });
   }
 
+  @UseGuards(AuthGuard)
   @Put(':id')
   @ApiOperation({
     summary: 'Update user password',
@@ -93,6 +99,7 @@ export class UsersController {
     return this.usersService.update({ where: { id }, data: updatePasswordDto });
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   @HttpCode(204)
   @ApiOperation({

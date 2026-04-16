@@ -15,7 +15,7 @@ export class AuthService {
     updatedAt: true,
     role: true,
     articles: true,
-    refreashToken: false,
+    refreshToken: false,
   };
 
   constructor(private prisma: PrismaService) {}

@@ -9,6 +9,7 @@ export class CreateCommentDto {
     example: '1b2e69d8-e5a3-4da7-8f0d-e64d87b14c72',
   })
   articleId: string;
+
   @IsString({ message: 'Content must be string' })
   @IsNotEmpty({ message: 'Content cannot be empty' })
   @ApiProperty({
@@ -16,6 +17,7 @@ export class CreateCommentDto {
     example: 'This is a very insightful article, thanks for sharing!',
   })
   content: string;
+
   @IsOptional()
   @ApiPropertyOptional({
     description: 'ID of the author who wrote the comment',
