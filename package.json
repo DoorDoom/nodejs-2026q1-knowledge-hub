@@ -17,7 +17,8 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest --testMatch \"<rootDir>/*.spec.ts\" --noStackTrace --runInBand",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
     "test:auth": "cross-env TEST_MODE=auth jest --testPathIgnorePatterns \"refresh|rbac\" --noStackTrace --runInBand",
     "test:refresh": "cross-env TEST_MODE=auth jest --testPathPattern refresh.e2e.spec.ts --noStackTrace --runInBand",
     "test:rbac": "cross-env TEST_MODE=auth jest --testPathPattern rbac --noStackTrace --runInBand",
@@ -49,7 +50,7 @@
   "devDependencies": {
     "@nestjs/cli": "10.4.9",
     "@nestjs/schematics": "10.0.3",
-    "@nestjs/testing": "10.4.16",
+    "@nestjs/testing": "^10.4.16",
     "@prisma/adapter-pg": "^7.7.0",
     "@types/bcrypt": "5.0.2",
     "@types/express": "4.17.21",
@@ -61,6 +62,7 @@
     "@types/uuid": "9.0.8",
     "@typescript-eslint/eslint-plugin": "7.1.1",
     "@typescript-eslint/parser": "7.1.1",
+    "@vitest/coverage-v8": "^4.1.5",
     "cross-env": "7.0.3",
     "dotenv": "^17.4.1",
     "eslint": "8.57.0",
@@ -77,6 +79,7 @@
     "ts-node": "10.9.2",
     "tsconfig-paths": "4.2.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.4"
   }
 }

@@ -10,6 +10,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, Role, User } from 'generated/prisma/client';
 import { genSaltSync, hashSync } from 'bcrypt';
 import { User as ServerUser } from './entities/user.entity';
+import { generatePasswordHash } from 'src/utils/hash';
 
 type Response = Omit<ServerUser, 'password' | 'refreshToken'>;
 
@@ -24,14 +25,6 @@ export class UsersService {
     articles: true,
     refreshToken: false,
   };
-
-  generatePasswordHash(password: string): string {
-    const saltRounds = process.env.SALT_ROUNDS
-      ? parseInt(process.env.SALT_ROUNDS)
-      : 10;
-    const salt = genSaltSync(saltRounds);
-    return hashSync(password, salt);
-  }
 
   convertToResponse(user: User): Response {
     return {
@@ -69,7 +62,7 @@ export class UsersService {
     const createdUser = await this.prisma.user.create({
       data: {
         ...data,
-        password: this.generatePasswordHash(data.password),
+        password: generatePasswordHash(data.password),
       },
     });
 
@@ -91,7 +84,7 @@ export class UsersService {
 
     const newUser = await this.prisma.user.update({
       data: {
-        password: this.generatePasswordHash(data.newPassword),
+        password: generatePasswordHash(data.newPassword),
         updatedAt: new Date(),
       },
       where,

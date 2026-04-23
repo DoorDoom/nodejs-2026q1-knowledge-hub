@@ -3,6 +3,7 @@ import { sign, verify } from 'jsonwebtoken';
 import { genSaltSync, hashSync } from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, User } from 'generated/prisma/client';
+import { generatePasswordHash } from 'src/utils/hash';
 
 type Response = Omit<User, 'password' | 'refreshToken'>;
 
@@ -19,14 +20,6 @@ export class AuthService {
   };
 
   constructor(private prisma: PrismaService) {}
-
-  generatePasswordHash(password: string): string {
-    const saltRounds = process.env.SALT_ROUNDS
-      ? parseInt(process.env.SALT_ROUNDS)
-      : 10;
-    const salt = genSaltSync(saltRounds);
-    return hashSync(password, salt);
-  }
 
   async updateTokens(user: User) {
     const accessToken = sign(
@@ -54,7 +47,7 @@ export class AuthService {
       const user = await this.prisma.user.create({
         data: {
           ...data,
-          password: this.generatePasswordHash(data.password),
+          password: generatePasswordHash(data.password),
         },
         select: this.response,
       });
