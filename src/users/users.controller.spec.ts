@@ -3,8 +3,16 @@ import { UsersService } from './users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Test } from '@nestjs/testing';
 import { Role } from 'generated/prisma/enums';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { generatePasswordHash } from 'src/utils/hash';
+import { CreateUserDto } from './dto/create-user.dto';
+import { validate } from 'class-validator';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 const mockUsers = [
   {
@@ -183,5 +191,100 @@ describe('UsersService', () => {
     await expect(
       usersService.delete({ id: '9e152776-2e6d-4f43-8328-19f2ebd6fa36' }),
     ).rejects.toThrow(NotFoundException);
+  });
+});
+
+describe('CreateUserDto', () => {
+  it('should pass validation with valid data', async () => {
+    const dto = new CreateUserDto();
+    dto.login = 'john';
+    dto.password = '123';
+
+    const errors = await validate(dto);
+
+    expect(errors.length).toBe(0);
+  });
+
+  it('should fail if login is empty', async () => {
+    const dto = new CreateUserDto();
+    dto.login = '';
+    dto.password = '123';
+
+    const errors = await validate(dto);
+
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0].constraints?.isNotEmpty).toBe('Login cannot be empty');
+  });
+
+  it('should fail if password is missing', async () => {
+    const dto = new CreateUserDto();
+    dto.login = 'john';
+
+    const errors = await validate(dto);
+
+    expect(errors.length).toBeGreaterThan(0);
+  });
+
+  it('should pass without optional role', async () => {
+    const dto = new CreateUserDto();
+    dto.login = 'john';
+    dto.password = '123';
+
+    const errors = await validate(dto);
+
+    expect(errors.length).toBe(0);
+  });
+
+  it('should fail with invalid role', async () => {
+    const dto = new CreateUserDto();
+    dto.login = 'john';
+    dto.password = '123';
+    dto.role = 'INVALID' as any;
+
+    const errors = await validate(dto);
+
+    expect(errors.length).toBeGreaterThan(0);
+  });
+});
+
+describe('UpdatePasswordDto', () => {
+  it('should pass with valid data', async () => {
+    const dto = new UpdatePasswordDto();
+    dto.oldPassword = 'old123';
+    dto.newPassword = 'new123';
+
+    const errors = await validate(dto);
+
+    expect(errors.length).toBe(0);
+  });
+
+  it('should fail if oldPassword is empty', async () => {
+    const dto = new UpdatePasswordDto();
+    dto.oldPassword = '';
+    dto.newPassword = 'new123';
+
+    const errors = await validate(dto);
+
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors.find((e) => e.property === 'oldPassword')).toBeDefined();
+  });
+
+  it('should fail if newPassword is missing', async () => {
+    const dto = new UpdatePasswordDto();
+    dto.oldPassword = 'old123';
+
+    const errors = await validate(dto);
+
+    expect(errors.length).toBeGreaterThan(0);
+  });
+
+  it('should fail if types are invalid', async () => {
+    const dto = new UpdatePasswordDto();
+    (dto as any).oldPassword = 123;
+    (dto as any).newPassword = true;
+
+    const errors = await validate(dto);
+
+    expect(errors.length).toBeGreaterThan(0);
   });
 });

@@ -45,6 +45,7 @@ export class CreateArticleDto {
     enum: Status,
     example: Status.DRAFT,
   })
+  @IsEnum(Status, { message: 'Invalid status' })
   status?: Status;
 
   @IsOptional()

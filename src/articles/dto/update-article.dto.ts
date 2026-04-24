@@ -1,4 +1,4 @@
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Status } from 'generated/prisma/enums';
 
@@ -39,6 +39,7 @@ export class UpdateArticleDto {
     enum: Status,
     example: Status.DRAFT,
   })
+  @IsEnum(Status, { message: 'Invalid status' })
   status?: Status;
 
   @IsOptional()

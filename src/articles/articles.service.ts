@@ -114,8 +114,12 @@ export class ArticlesService {
     const article = await this.prisma.article.findUnique({ where });
     if (!article) throw new NotFoundException('Article not found');
 
-    if (!Object.values(Status).includes(data.status?.toUpperCase() as Status)) {
-      throw new BadRequestException('Invalid status');
+    if (data.status) {
+      if (
+        !Object.values(Status).includes(data.status?.toUpperCase() as Status)
+      ) {
+        throw new BadRequestException('Invalid status');
+      }
     }
 
     const updatedArticle = await this.prisma.article.update({
@@ -147,7 +151,10 @@ export class ArticlesService {
       },
     });
 
-    return this.transformArticle(updatedArticle);
+    return {
+      ...this.transformArticle(updatedArticle),
+      tags: updatedArticle.tags.map((tag) => tag.name),
+    };
   }
 
   async delete(where: Prisma.ArticleWhereUniqueInput): Promise<Article> {

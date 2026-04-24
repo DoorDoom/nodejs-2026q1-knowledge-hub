@@ -52,15 +52,14 @@ export class AuthService {
         select: this.response,
       });
       return user;
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new HttpException(
-            'User with this login already exists',
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new HttpException(
+          'User with this login already exists',
+          HttpStatus.BAD_REQUEST,
+        );
       }
+
       throw error;
     }
   }
