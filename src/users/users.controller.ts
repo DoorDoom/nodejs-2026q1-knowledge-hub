@@ -9,16 +9,21 @@ import {
   ParseUUIDPipe,
   BadRequestException,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { Roles } from 'src/decorators/roles.decorator';
 
 @Controller('user')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR'])
   @Post()
   @ApiOperation({
     summary: 'Create user',
@@ -30,6 +35,8 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR', 'VIEWER'])
   @Get()
   @ApiOperation({
     summary: 'Get all users',
@@ -40,6 +47,8 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR', 'VIEWER'])
   @Get(':id')
   @ApiOperation({
     summary: 'Get user by ID',
@@ -66,7 +75,9 @@ export class UsersController {
     return this.usersService.findOne({ id });
   }
 
+  @UseGuards(AuthGuard)
   @Put(':id')
+  @Roles(['ADMIN', 'EDITOR'])
   @ApiOperation({
     summary: 'Update user password',
     description: 'Updates the password of a user by UUID',
@@ -93,6 +104,8 @@ export class UsersController {
     return this.usersService.update({ where: { id }, data: updatePasswordDto });
   }
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN'])
   @Delete(':id')
   @HttpCode(204)
   @ApiOperation({

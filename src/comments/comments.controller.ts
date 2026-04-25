@@ -9,15 +9,20 @@ import {
   ParseUUIDPipe,
   BadRequestException,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { Roles } from 'src/decorators/roles.decorator';
 
 @Controller('comment')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR'])
   @Post()
   @ApiOperation({
     summary: 'Create comment',
@@ -30,6 +35,8 @@ export class CommentsController {
     return this.commentsService.create(createCommentDto);
   }
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR', 'VIEWER'])
   @Get()
   @ApiOperation({
     summary: 'Get all comments',
@@ -47,6 +54,34 @@ export class CommentsController {
     return this.commentsService.findAll(articleId);
   }
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR', 'VIEWER'])
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Get comment by ID',
+    description: 'Retrieves a comment by its UUID.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Comment UUID (v4)',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiResponse({ status: 200, description: 'Comments retrieved successfully' })
+  findOne(
+    @Param(
+      'id',
+      new ParseUUIDPipe({
+        version: '4',
+        exceptionFactory: () => new BadRequestException('Invalid UUID format'),
+      }),
+    )
+    id: string,
+  ) {
+    return this.commentsService.findOne({ id });
+  }
+
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN'])
   @Delete(':id')
   @HttpCode(204)
   @ApiOperation({

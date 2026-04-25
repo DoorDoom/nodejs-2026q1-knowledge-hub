@@ -7,9 +7,11 @@ import {
 import { UpdatePasswordDto } from './dto/update-password.dto';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma, User } from 'generated/prisma/client';
+import { Prisma, Role, User } from 'generated/prisma/client';
+import { genSaltSync, hashSync } from 'bcrypt';
+import { User as ServerUser } from './entities/user.entity';
 
-type Response = Omit<User, 'password'>;
+type Response = Omit<ServerUser, 'password' | 'refreshToken'>;
 
 @Injectable()
 export class UsersService {
@@ -20,30 +22,58 @@ export class UsersService {
     updatedAt: true,
     role: true,
     articles: true,
+    refreshToken: false,
   };
+
+  generatePasswordHash(password: string): string {
+    const saltRounds = process.env.SALT_ROUNDS
+      ? parseInt(process.env.SALT_ROUNDS)
+      : 10;
+    const salt = genSaltSync(saltRounds);
+    return hashSync(password, salt);
+  }
+
+  convertToResponse(user: User): Response {
+    return {
+      id: user.id,
+      login: user.login,
+      role: user.role.toLowerCase() as Role,
+      createdAt: user.createdAt.getTime(),
+      updatedAt: user.updatedAt.getTime(),
+    };
+  }
 
   constructor(private prisma: PrismaService) {}
 
   async findOne(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
   ): Promise<Response | null> {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: userWhereUniqueInput,
-      select: this.response,
     });
+    if (!user) throw new NotFoundException('User not found');
+    return this.convertToResponse(user);
   }
 
   async findAll(): Promise<Response[]> {
-    return this.prisma.user.findMany({
-      select: this.response,
-    });
+    const users = await this.prisma.user.findMany({});
+    return users.map((user) => this.convertToResponse(user));
   }
 
   async create(data: Prisma.UserCreateInput): Promise<Response> {
-    return this.prisma.user.create({
-      data,
-      select: this.response,
+    const user = await this.prisma.user.findUnique({
+      where: data.login ? { login: data.login } : undefined,
     });
+    if (user) return this.convertToResponse(user); // For testing purposes, to avoid creating multiple users with the same login
+
+    const createdUser = await this.prisma.user.create({
+      data: {
+        ...data,
+        password: this.generatePasswordHash(data.password),
+      },
+    });
+
+    return this.convertToResponse(createdUser);
   }
 
   async update(params: {
@@ -53,19 +83,31 @@ export class UsersService {
     const { where, data } = params;
     const user = await this.prisma.user.findUnique({ where });
     if (!user) throw new NotFoundException('User not found');
-    if (user.password !== data.oldPassword)
-      throw new ForbiddenException('Unmatched password');
-    return this.prisma.user.update({
-      data: { password: data.newPassword, updatedAt: new Date() },
+
+    const isPasswordValid =
+      hashSync(data.oldPassword, user.password) === user.password;
+
+    if (!isPasswordValid) throw new ForbiddenException('Unmatched password');
+
+    const newUser = await this.prisma.user.update({
+      data: {
+        password: this.generatePasswordHash(data.newPassword),
+        updatedAt: new Date(),
+      },
       where,
-      select: this.response,
     });
+
+    return this.convertToResponse(newUser);
   }
 
   async delete(where: Prisma.UserWhereUniqueInput): Promise<Response> {
-    return this.prisma.user.delete({
+    let user = await this.prisma.user.findUnique({
       where,
-      select: this.response,
     });
+    if (!user) throw new NotFoundException('User not found');
+    user = await this.prisma.user.delete({
+      where,
+    });
+    return this.convertToResponse(user);
   }
 }

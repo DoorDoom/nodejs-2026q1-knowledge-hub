@@ -10,17 +10,22 @@ import {
   BadRequestException,
   HttpCode,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Status } from 'generated/prisma/enums';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { Roles } from 'src/decorators/roles.decorator';
 
 @Controller('article')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR'])
   @Post()
   @ApiOperation({
     summary: 'Create article',
@@ -33,6 +38,8 @@ export class ArticlesController {
     return this.articlesService.create(createArticleDto);
   }
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR', 'VIEWER'])
   @Get()
   @ApiOperation({
     summary: 'Get all articles',
@@ -66,13 +73,15 @@ export class ArticlesController {
   ) {
     if (status || tag || categoryId)
       return this.articlesService.findbyParam({
-        status: status as Status,
+        status: status ? (status.toUpperCase() as Status) : undefined,
         tag,
         categoryId,
       });
     return this.articlesService.findAll();
   }
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR', 'VIEWER'])
   @Get(':id')
   @ApiOperation({
     summary: 'Get article by ID',
@@ -99,6 +108,8 @@ export class ArticlesController {
     return this.articlesService.findOne({ id });
   }
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR'])
   @Put(':id')
   @ApiOperation({
     summary: 'Update article',
@@ -130,6 +141,8 @@ export class ArticlesController {
     });
   }
 
+  @UseGuards(AuthGuard)
+  @Roles(['ADMIN', 'EDITOR'])
   @Delete(':id')
   @HttpCode(204)
   @ApiOperation({

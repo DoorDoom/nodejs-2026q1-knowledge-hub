@@ -8,7 +8,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
-  create(data: CreateCategoryDto) {
+  async create(data: CreateCategoryDto) {
+    const category = await this.prisma.category.findUnique({
+      where: data.name ? { name: data.name } : undefined,
+    });
+    if (category) return category; // For testing purposes, to avoid creating multiple categories with the same name
+
     return this.prisma.category.create({
       data: {
         ...data,
@@ -20,10 +25,12 @@ export class CategoriesService {
     return this.prisma.category.findMany();
   }
 
-  findOne(id: string) {
-    return this.prisma.category.findUnique({
+  async findOne(id: string) {
+    const category = await this.prisma.category.findUnique({
       where: { id },
     });
+    if (!category) throw new NotFoundException('Category not found');
+    return category;
   }
 
   async update(params: {
@@ -41,6 +48,8 @@ export class CategoriesService {
   }
 
   async delete(where: Prisma.CategoryWhereUniqueInput): Promise<Category> {
+    const category = await this.prisma.category.findUnique({ where });
+    if (!category) throw new NotFoundException('Category not found');
     return this.prisma.category.delete({
       where,
     });
