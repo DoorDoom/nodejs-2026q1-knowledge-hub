@@ -1,8 +1,13 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { sign, verify } from 'jsonwebtoken';
 import { genSaltSync, hashSync } from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, User } from 'generated/prisma/client';
+import { generatePasswordHash } from 'src/utils/hash';
 
 type Response = Omit<User, 'password' | 'refreshToken'>;
 
@@ -19,14 +24,6 @@ export class AuthService {
   };
 
   constructor(private prisma: PrismaService) {}
-
-  generatePasswordHash(password: string): string {
-    const saltRounds = process.env.SALT_ROUNDS
-      ? parseInt(process.env.SALT_ROUNDS)
-      : 10;
-    const salt = genSaltSync(saltRounds);
-    return hashSync(password, salt);
-  }
 
   async updateTokens(user: User) {
     const accessToken = sign(
@@ -54,20 +51,16 @@ export class AuthService {
       const user = await this.prisma.user.create({
         data: {
           ...data,
-          password: this.generatePasswordHash(data.password),
+          password: generatePasswordHash(data.password),
         },
         select: this.response,
       });
       return user;
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new HttpException(
-            'User with this login already exists',
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new BadRequestException('User with this login already exists');
       }
+
       throw error;
     }
   }
@@ -79,18 +72,12 @@ export class AuthService {
       },
     });
     if (!user) {
-      throw new HttpException(
-        'Invalid login or password',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new ForbiddenException('Invalid login or password');
     }
     const isPasswordValid =
       hashSync(data.password, user.password) === user.password;
     if (!isPasswordValid) {
-      throw new HttpException(
-        'Invalid login or password',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new ForbiddenException('Invalid login or password');
     }
 
     return await this.updateTokens(user);
@@ -109,7 +96,7 @@ export class AuthService {
 
       return await this.updateTokens(foundUser);
     } catch {
-      throw new HttpException('Invalid token', HttpStatus.FORBIDDEN);
+      throw new ForbiddenException('Invalid token');
     }
   }
 }
