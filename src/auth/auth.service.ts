@@ -1,4 +1,8 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { sign, verify } from 'jsonwebtoken';
 import { genSaltSync, hashSync } from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -54,10 +58,7 @@ export class AuthService {
       return user;
     } catch (error: any) {
       if (error.code === 'P2002') {
-        throw new HttpException(
-          'User with this login already exists',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new BadRequestException('User with this login already exists');
       }
 
       throw error;
@@ -71,18 +72,12 @@ export class AuthService {
       },
     });
     if (!user) {
-      throw new HttpException(
-        'Invalid login or password',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new ForbiddenException('Invalid login or password');
     }
     const isPasswordValid =
       hashSync(data.password, user.password) === user.password;
     if (!isPasswordValid) {
-      throw new HttpException(
-        'Invalid login or password',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new ForbiddenException('Invalid login or password');
     }
 
     return await this.updateTokens(user);
@@ -101,7 +96,7 @@ export class AuthService {
 
       return await this.updateTokens(foundUser);
     } catch {
-      throw new HttpException('Invalid token', HttpStatus.FORBIDDEN);
+      throw new ForbiddenException('Invalid token');
     }
   }
 }

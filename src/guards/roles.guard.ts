@@ -2,8 +2,8 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  HttpException,
-  HttpStatus,
+  ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from 'generated/prisma/client';
@@ -26,10 +26,7 @@ export class RolesGuard implements CanActivate {
     const authHeader = request.headers.authorization;
 
     if (!authHeader) {
-      throw new HttpException(
-        'Authorization header missing',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new UnauthorizedException('Authorization header missing');
     }
 
     const token = authHeader.split(' ')[1];
@@ -39,7 +36,7 @@ export class RolesGuard implements CanActivate {
       const userRole = (user as any).role.toUpperCase();
       return this.matchRoles(requiredRoles, userRole);
     } catch (e) {
-      throw new HttpException('Invalid token', HttpStatus.FORBIDDEN);
+      throw new ForbiddenException('Invalid token');
     }
   }
 }

@@ -1,9 +1,9 @@
 import {
   CanActivate,
   ExecutionContext,
-  HttpException,
-  HttpStatus,
+  ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 
@@ -15,10 +15,7 @@ export class AuthGuard implements CanActivate {
     const authHeader = request.headers.authorization;
 
     if (!authHeader) {
-      throw new HttpException(
-        'Authorization header missing',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new UnauthorizedException('Authorization header missing');
     }
 
     const token = authHeader.split(' ')[1];
@@ -27,7 +24,7 @@ export class AuthGuard implements CanActivate {
       jwt.verify(token, process.env.JWT_SECRET_KEY || 'secret');
       return true;
     } catch (e) {
-      throw new HttpException('Invalid token', HttpStatus.FORBIDDEN);
+      throw new ForbiddenException('Invalid token');
     }
   }
 }

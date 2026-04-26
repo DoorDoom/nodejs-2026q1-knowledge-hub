@@ -2,10 +2,17 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { RolesGuard } from './guards/roles.guard';
+import { LoggingInterceptor } from './interceptors/logging.interceptor';
+import { GlobalExceptionFilter } from './interceptors/error-logging.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const isProd = process.env.NODE_ENV === 'production';
+
+  const app = await NestFactory.create(AppModule, {
+    logger: isProd
+      ? ['log', 'warn', 'error']
+      : ['debug', 'log', 'warn', 'error', 'verbose'],
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Swagger doc')
@@ -17,6 +24,8 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('doc', app, documentFactory);
 
+  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalPipes(
     new ValidationPipe({
