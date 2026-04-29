@@ -7,6 +7,7 @@ import { TranslateArticleDto } from './dto/translate-article.dto';
 import { AnalyzeArticleDto, Task } from './dto/analyze-article.dto';
 import {
   analysisTemplate,
+  simpleTemplate,
   summarizeTemplate,
   translateTemplate,
 } from './templates/prompt-templates';
@@ -15,6 +16,7 @@ import {
 export class AiService {
   ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   model = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
+  cacheResponse = new Map<string, string>();
 
   generateSummarize = async (status: Status, content: string) => {
     const response = await this.ai.models.generateContent({
@@ -64,16 +66,24 @@ export class AiService {
     });
     if (!article) throw new NotFoundException('Article not found');
 
+    const key = `${articleWhereUniqueInput.id}:${summarizeArticleDto.status || 'medium'}:${article.updatedAt}`;
+    const cachedResponse = this.cacheResponse.get(key);
+    if (cachedResponse) return JSON.parse(cachedResponse);
+
     const summary = await this.generateSummarize(
       summarizeArticleDto.status || 'medium',
       article.content,
     );
-    return {
+    const response = {
       articleId: articleWhereUniqueInput.id,
       summary,
       originalLength: article.content.length,
       summaryLength: summary.length,
     };
+
+    this.cacheResponse.set(key, JSON.stringify(response));
+
+    return response;
   }
 
   async translate(
@@ -88,16 +98,34 @@ export class AiService {
     });
     if (!article) throw new NotFoundException('Article not found');
 
+    const key = `${articleWhereUniqueInput.id}:${translateArticleDto.targetLanguage}:${translateArticleDto.sourceLanguage}:${article.updatedAt}`;
+    const cachedResponse = this.cacheResponse.get(key);
+    if (cachedResponse) return JSON.parse(cachedResponse);
+
     const translatedText = await this.generateTranslation(
       translateArticleDto.targetLanguage,
       article.content,
       translateArticleDto.sourceLanguage,
     );
-    return {
+
+    const response = {
       articleId: articleWhereUniqueInput.id,
       translatedText,
       detectedLanguage: translateArticleDto.targetLanguage,
     };
+
+    this.cacheResponse.set(key, JSON.stringify(response));
+
+    return response;
+  }
+
+  async generate() {
+    const response = await this.ai.models.generateContent({
+      model: this.model,
+      contents: simpleTemplate(),
+    });
+
+    return { text: response.text };
   }
 
   async analyze(

@@ -68,4 +68,11 @@ export class AiController {
   ) {
     return this.aiService.analyze({ id }, analyzeArticleDto);
   }
+
+  @UseGuards(AuthGuard)
+  @Post('generate')
+  @HttpCode(200)
+  generate() {
+    return this.aiService.generate();
+  }
 }
