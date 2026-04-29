@@ -1,4 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotAcceptableException,
+  NotFoundException,
+  ServiceUnavailableException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { Prisma } from 'generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Status, SummarizeArticleDto } from './dto/summarize-article.dto';
@@ -19,25 +28,65 @@ export class AiService {
   cacheResponse = new Map<string, string>();
 
   generateSummarize = async (status: Status, content: string) => {
-    const response = await this.ai.models.generateContent({
-      model: this.model,
-      contents: summarizeTemplate(content, status),
-    });
-    return response.text;
+    try {
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents: summarizeTemplate(content, status),
+      });
+      return response.text;
+    } catch (error: any) {
+      if (error?.status === 429) {
+        throw new NotAcceptableException('AI rate limit exceeded');
+      }
+
+      if (error?.status === 400) {
+        throw new BadRequestException('Invalid AI request');
+      }
+
+      if (error?.status === 403) {
+        throw new ForbiddenException('AI access denied (check API key)');
+      }
+
+      if (error?.status === 503) {
+        throw new ServiceUnavailableException('AI service anavailable');
+      }
+
+      throw new InternalServerErrorException('AI service failed');
+    }
   };
 
   generateAnalysis = async (task: Task, content: string) => {
-    const response = await this.ai.models.generateContent({
-      model: this.model,
-      contents: analysisTemplate(content, task || 'review'),
-    });
+    try {
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents: analysisTemplate(content, task || 'review'),
+      });
 
-    const obj = JSON.parse(response.text);
-    return {
-      analysis: obj.analysis,
-      suggestions: obj.suggestions,
-      severity: obj.severity,
-    };
+      const obj = JSON.parse(response.text);
+      return {
+        analysis: obj.analysis,
+        suggestions: obj.suggestions,
+        severity: obj.severity,
+      };
+    } catch (error: any) {
+      if (error?.status === 429) {
+        throw new NotAcceptableException('AI rate limit exceeded');
+      }
+
+      if (error?.status === 400) {
+        throw new BadRequestException('Invalid AI request');
+      }
+
+      if (error?.status === 403) {
+        throw new ForbiddenException('AI access denied (check API key)');
+      }
+
+      if (error?.status === 503) {
+        throw new ServiceUnavailableException('AI service anavailable');
+      }
+
+      throw new InternalServerErrorException('AI service failed');
+    }
   };
 
   generateTranslation = async (
@@ -45,11 +94,31 @@ export class AiService {
     content: string,
     sourceLanguage?: string,
   ) => {
-    const response = await this.ai.models.generateContent({
-      model: this.model,
-      contents: translateTemplate(content, targetLang, sourceLanguage),
-    });
-    return response.text;
+    try {
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents: translateTemplate(content, targetLang, sourceLanguage),
+      });
+      return response.text;
+    } catch (error: any) {
+      if (error?.status === 429) {
+        throw new NotAcceptableException('AI rate limit exceeded');
+      }
+
+      if (error?.status === 400) {
+        throw new BadRequestException('Invalid AI request');
+      }
+
+      if (error?.status === 403) {
+        throw new ForbiddenException('AI access denied (check API key)');
+      }
+
+      if (error?.status === 503) {
+        throw new ServiceUnavailableException('AI service anavailable');
+      }
+
+      throw new InternalServerErrorException('AI service failed');
+    }
   };
 
   constructor(private prisma: PrismaService) {}
