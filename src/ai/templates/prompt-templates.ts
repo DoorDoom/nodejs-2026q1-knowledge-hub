@@ -54,5 +54,5 @@ export function analysisTemplate(content: string, task: string) {
 }
 
 export function simpleTemplate() {
-  return `Write, please, some basics about NestJS`;
+  return `Node.js Best Practices`;
 }

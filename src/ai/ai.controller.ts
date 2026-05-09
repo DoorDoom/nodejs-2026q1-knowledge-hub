@@ -13,6 +13,7 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { SummarizeArticleDto } from './dto/summarize-article.dto';
 import { TranslateArticleDto } from './dto/translate-article.dto';
 import { AnalyzeArticleDto } from './dto/analyze-article.dto';
+import { IndexArticleDto } from './dto/indexing-article.dto';
 
 @Controller('ai')
 export class AiController {
@@ -74,5 +75,12 @@ export class AiController {
   @HttpCode(200)
   generate() {
     return this.aiService.generate();
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('rag/index')
+  @HttpCode(200)
+  indexing(@Body() indexArticleDto: IndexArticleDto) {
+    return this.aiService.indexing(indexArticleDto);
   }
 }

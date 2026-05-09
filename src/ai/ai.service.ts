@@ -20,16 +20,18 @@ import {
   summarizeTemplate,
   translateTemplate,
 } from './templates/prompt-templates';
+import { IndexArticleDto } from './dto/indexing-article.dto';
+import { GeminiAiService } from 'src/gemini-ai.service';
+import { RagService } from 'src/rag/rag.service';
 
 @Injectable()
 export class AiService {
-  ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  model = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
   cacheResponse = new Map<string, string>();
+  model = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 
   generateSummarize = async (status: Status, content: string) => {
     try {
-      const response = await this.ai.models.generateContent({
+      const response = await this.gemini.ai.models.generateContent({
         model: this.model,
         contents: summarizeTemplate(content, status),
       });
@@ -57,7 +59,7 @@ export class AiService {
 
   generateAnalysis = async (task: Task, content: string) => {
     try {
-      const response = await this.ai.models.generateContent({
+      const response = await this.gemini.ai.models.generateContent({
         model: this.model,
         contents: analysisTemplate(content, task || 'review'),
       });
@@ -95,7 +97,7 @@ export class AiService {
     sourceLanguage?: string,
   ) => {
     try {
-      const response = await this.ai.models.generateContent({
+      const response = await this.gemini.ai.models.generateContent({
         model: this.model,
         contents: translateTemplate(content, targetLang, sourceLanguage),
       });
@@ -121,7 +123,11 @@ export class AiService {
     }
   };
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private gemini: GeminiAiService,
+    private ragService: RagService,
+  ) {}
 
   async summarize(
     articleWhereUniqueInput: Prisma.ArticleWhereUniqueInput,
@@ -189,7 +195,7 @@ export class AiService {
   }
 
   async generate() {
-    const response = await this.ai.models.generateContent({
+    const response = await this.gemini.ai.models.generateContent({
       model: this.model,
       contents: simpleTemplate(),
     });
@@ -219,5 +225,21 @@ export class AiService {
       suggestions,
       severity,
     };
+  }
+
+  async indexing(indexArticleDto: IndexArticleDto) {
+    const articles = await this.prisma.article.findMany({
+      include: {
+        tags: true,
+      },
+    });
+
+    if (!articles) return { text: 'no articles' };
+
+    const articleTexts = articles.map((article) => article.content);
+
+    const response = await this.ragService.embedTexts(articleTexts);
+
+    return response;
   }
 }

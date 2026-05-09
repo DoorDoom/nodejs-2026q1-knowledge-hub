@@ -11,6 +11,8 @@ import { AuthModule } from './auth/auth.module';
 import { AiModule } from './ai/ai.module';
 import { seconds, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { RagModule } from './rag/rag.module';
+import { GeminiAiService } from './gemini-ai.service';
 
 @Module({
   imports: [
@@ -34,10 +36,12 @@ import { APP_GUARD } from '@nestjs/core';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    RagModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    GeminiAiService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
